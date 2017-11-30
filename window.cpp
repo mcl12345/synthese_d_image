@@ -12,6 +12,7 @@
 #include <time.h>
 
 #include <GL4D/gl4du.h>
+#include <GL4D/gl4duw_SDL2.h>
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
@@ -32,6 +33,22 @@ static void loop(SDL_Window * win);
 static void manageEvents(SDL_Window * win);
 static void draw(void);
 static void quit(void);
+
+//---------------------------------------------------------------------- sphere
+/* Prototypes des fonctions statiques contenues dans ce fichier C */
+static void init(void);
+static void resize(int w, int h);
+//static void mouse(int button, int state, int x, int y);
+static void draww(void);
+/*!\brief dimensions de la fenetre */
+static int _windowWidth = 800, _windowHeight = 600;
+/*!\brief identifiant du programme GLSL */
+static GLuint _pId_ = 0;
+/*!\brief identifiant de la sphere */
+static GLuint _sphere = 0;
+/*!\brief translation de la sphere */
+static GLfloat _t[2] = {0, 0};
+//---------------------------------------------------------------------- end sphere
 
 
 /*!\brief dimensions de la fen�tre */
@@ -54,8 +71,45 @@ static VideoCapture * _cap = NULL;
 CascadeClassifier * face_cc;
 CascadeClassifier * eye_cc;
 
+//------------------------------------------------------------------------ functions sphere
+/*!\brief initialise les param�tres OpenGL et g�om�trie */
+static void init(void) {
+  glEnable(GL_DEPTH_TEST);
+  //glClearColor(0.0f, 0.f, 0.f, 0.0f);
+  _pId_  = gl4duCreateProgram("<vs>shaders/basic.vs", "<fs>shaders/basic.fs", NULL);
+  gl4duGenMatrix(GL_FLOAT, "modelViewMatrix");
+  gl4duGenMatrix(GL_FLOAT, "projectionMatrix");
+  resize(_windowWidth, _windowHeight);
+  _sphere = gl4dgGenSpheref(30, 30);
+}
 
+/*!\brief Cette fonction param�tre la vue (viewport) OpenGL en
+ * fonction des dimensions de la fen�tre.*/
+static void resize(int w, int h) {
+  _windowWidth  = w; _windowHeight = h;
+  glViewport(0, 0, _windowWidth, _windowHeight);
+  gl4duBindMatrix("projectionMatrix");
+  gl4duLoadIdentityf();
+  gl4duOrthof(-5, 5, -5, 5, 0.0, 1000.0);
+  gl4duBindMatrix("modelViewMatrix");
+}
 
+/*!\brief Dessine dans le contexte OpenGL actif. */
+static void draww(void) {
+  GLfloat rouge[] = {1,     0,    0,    1};
+  GLfloat blanc[] = {1.0f,  1.0f, 1.0f, 1.0f};
+  GLfloat bleu[]  = {0.5f,  0.5f, 1.0f, 1.0f};
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  gl4duBindMatrix("modelViewMatrix");
+  gl4duLoadIdentityf();
+  glUseProgram(_pId_);
+  gl4duTranslatef(_t[0], _t[1], -10.0);
+  gl4duSendMatrices();
+  glUniform4fv(glGetUniformLocation(_pId_, "couleur"), 1, blanc);
+  gl4dgDraw(_sphere);
+}
+//------------------------------------------------------------------------ end functions sphere
 
 /*!\brief La fonction principale initialise la bibliotheque SDL2, demande la creation de la fenetre SDL et du contexte OpenGL par
  * l'appel a \ref initWindow, initialise OpenGL avec \ref initGL et lance la boucle (infinie) principale.
@@ -71,6 +125,17 @@ int main(int argc, char ** argv) {
       fprintf(stderr, "Erreur lors de l'initialisation de SDL :  %s", SDL_GetError());
       return -1;
   }
+
+  // ----------------------------------- sphere program
+  
+  init();
+  atexit(quit);
+  //gl4duwResizeFunc(resize);
+  gl4duwDisplayFunc(draw);
+  //gl4duwMouseFunc(mouse);
+  gl4duwMainLoop(); // boucle infinie
+
+  // ----------------------------------- end sphere program
 
   atexit(SDL_Quit);
 
@@ -290,15 +355,14 @@ static void draw(void) {
   // streaming tournant
   gl4duRotatef(5, 0, 1, 0); // Ajoute 5 degres selon l'axe y a la matrice modelview en cours
   gl4duSendMatrices();      // Envoyer les matrices
-  glUniform4fv(glGetUniformLocation(_pId, "couleur"), 1, bleu); // envoyer une couleur
+  glUniform4fv(glGetUniformLocation(_pId, "couleur"), 1, blanc); // envoyer une couleur
   glBindVertexArray(_vao);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // dessiner le streaming sur le lointain (ici perspective liee a projection) plan tournant
 
   // streaming tournant
   gl4duRotatef(5, 1, 0, 0); // Ajoute 5 degres selon l'axe y a la matrice modelview en cours
-  gl4duTranslatef(0, 0, 0.9999f);
   gl4duSendMatrices();      // Envoyer les matrices
-  glUniform4fv(glGetUniformLocation(_pId, "couleur"), 1, bleu); // envoyer une couleur
+  glUniform4fv(glGetUniformLocation(_pId, "couleur"), 1, blanc); // envoyer une couleur
   glBindVertexArray(_vao);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // dessiner le streaming sur le lointain (ici perspective liee a projection) plan tournant
 }
