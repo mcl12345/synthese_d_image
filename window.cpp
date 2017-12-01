@@ -145,7 +145,7 @@ int main(int argc, char ** argv) {
       initGL(_win);
       _pId = gl4duCreateProgram("<vs>shaders/basic.vs", "<fs>shaders/basic.fs", NULL);
       initData();
-    draww();
+    draww(); // sphere 3D
       loop(_win);
   }
 
