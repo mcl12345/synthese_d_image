@@ -72,26 +72,25 @@ CascadeClassifier * face_cc;
 CascadeClassifier * eye_cc;
 
 //------------------------------------------------------------------------ functions sphere
-/*!\brief initialise les param�tres OpenGL et g�om�trie */
+//!\brief Initialise les parametres OpenGL et geometrie
 static void init(void) {
   glEnable(GL_DEPTH_TEST);
   //glClearColor(0.0f, 0.f, 0.f, 0.0f);
   _pId_  = gl4duCreateProgram("<vs>shaders/basic.vs", "<fs>shaders/basic.fs", NULL);
-  gl4duGenMatrix(GL_FLOAT, "modelViewMatrix");
-  gl4duGenMatrix(GL_FLOAT, "projectionMatrix");
+  gl4duGenMatrix(GL_FLOAT, "modelViewMatrix1");
+  gl4duGenMatrix(GL_FLOAT, "projectionMatrix1");
   resize(_windowWidth, _windowHeight);
   _sphere = gl4dgGenSpheref(30, 30);
 }
 
-/*!\brief Cette fonction param�tre la vue (viewport) OpenGL en
- * fonction des dimensions de la fen�tre.*/
+//!\brief Cette fonction parametre la vue (viewport) OpenGL en fonction des dimensions de la fenetre.
 static void resize(int w, int h) {
   _windowWidth  = w; _windowHeight = h;
   glViewport(0, 0, _windowWidth, _windowHeight);
-  gl4duBindMatrix("projectionMatrix");
+  gl4duBindMatrix("projectionMatrix1");
   gl4duLoadIdentityf();
   gl4duOrthof(-5, 5, -5, 5, 0.0, 1000.0);
-  gl4duBindMatrix("modelViewMatrix");
+  gl4duBindMatrix("modelViewMatrix1");
 }
 
 /*!\brief Dessine dans le contexte OpenGL actif. */
@@ -101,7 +100,7 @@ static void draww(void) {
   GLfloat bleu[]  = {0.5f,  0.5f, 1.0f, 1.0f};
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  gl4duBindMatrix("modelViewMatrix");
+  gl4duBindMatrix("modelViewMatrix1");
   gl4duLoadIdentityf();
   glUseProgram(_pId_);
   gl4duTranslatef(_t[0], _t[1], -10.0);
@@ -127,13 +126,10 @@ int main(int argc, char ** argv) {
   }
 
   // ----------------------------------- sphere program
-  
-  init();
+
   //atexit(quit);
   //gl4duwResizeFunc(resize);
- // gl4duwDisplayFunc(draww);
   //gl4duwMouseFunc(mouse);
-  //gl4duwMainLoop(); // boucle infinie
 
   // ----------------------------------- end sphere program
 
@@ -145,9 +141,8 @@ int main(int argc, char ** argv) {
       initGL(_win);
       _pId = gl4duCreateProgram("<vs>shaders/basic.vs", "<fs>shaders/basic.fs", NULL);
       initData();
+        init(); // sphere 3D
       loop(_win);
-        draww(); // sphere 3D
-
   }
 
 
@@ -367,6 +362,10 @@ static void draw(void) {
   glUniform4fv(glGetUniformLocation(_pId, "couleur"), 1, blanc); // envoyer une couleur
   glBindVertexArray(_vao);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // dessiner le streaming sur le lointain (ici perspective liee a projection) plan tournant
+
+  draww();
+  //gl4duwDisplayFunc(draww); // sphere 3D
+  //gl4duwMainLoop(); // sphere 3D // boucle infinie
 }
 
 /*!\brief Cette fonction est appelee au moment de sortir du programme
