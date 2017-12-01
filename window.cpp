@@ -131,9 +131,9 @@ int main(int argc, char ** argv) {
   init();
   atexit(quit);
   //gl4duwResizeFunc(resize);
-  gl4duwDisplayFunc(draw);
+ // gl4duwDisplayFunc(draww);
   //gl4duwMouseFunc(mouse);
-  gl4duwMainLoop(); // boucle infinie
+  //gl4duwMainLoop(); // boucle infinie
 
   // ----------------------------------- end sphere program
 
@@ -145,6 +145,7 @@ int main(int argc, char ** argv) {
       initGL(_win);
       _pId = gl4duCreateProgram("<vs>shaders/basic.vs", "<fs>shaders/basic.fs", NULL);
       initData();
+    draww();
       loop(_win);
   }
 
